@@ -31,14 +31,24 @@ class AccessControl:
 
         except Exception as e:
             print(e) 
-            return jsonify({"Status":"0","Message":"Something issue please try later"}) 
+            error = e
+            return jsonify({"Status":"0","Message":"Something issue please try later","error":error}) 
         finally:
             cur.close()
 
-    def listUser(self):
+    def listUser(self,data):
         cur = self.mysql.connection.cursor()
         try:
-            cur.execute('''SELECT * FROM users''')
+            search = data['search']
+            if search == '':
+                query = '''SELECT * FROM users'''
+                cur.execute(query)
+            else:
+                query = "SELECT * FROM users WHERE USERNAME LIKE '%{}%' OR MOBILENO LIKE '%{}%' OR EMAIL LIKE '%{}%' " 
+                cur.execute(query.format(search,search,search))
+                self.mysql.connection.commit()
+            # cur.execute('''SELECT * FROM users''')
+            
             row = cur.fetchall()
             payload = []
             content = {}
